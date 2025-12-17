@@ -69,6 +69,18 @@ describe('Users Controller (e2e)', () => {
       expect(response.body.meta.currentPage).toBe(1);
     });
 
+    // NEW: Added missing test from README (Pagination Page 2)
+    it('should return the second page of users', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/users?limit=5&page=2')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+      expect(response.body.data.length).toBe(5);
+      expect(response.body.meta.currentPage).toBe(2);
+      // Ensure it's not the same data as page 1 (optional check)
+      expect(response.body.data[0].username).not.toBe('user_0');
+    });
+
     it('should sort users by username ASC', async () => {
       const response = await request(app.getHttpServer())
         .get('/users?orderBy=username&order=ASC')
@@ -80,7 +92,6 @@ describe('Users Controller (e2e)', () => {
       ).toBeLessThanOrEqual(0);
     });
 
-    // NEW: Added missing test from README
     it('should sort users by createdAt DESC', async () => {
       const response = await request(app.getHttpServer())
         .get('/users?orderBy=createdAt&order=DESC')
@@ -126,7 +137,6 @@ describe('Users Controller (e2e)', () => {
         .expect(200);
     });
 
-    // NEW: Added missing test from README
     it('should reset user password', async () => {
       // 1. Reset password
       await request(app.getHttpServer())
@@ -153,6 +163,16 @@ describe('Users Controller (e2e)', () => {
 
       const check = await userRepository.findOne({ where: { id: u.id } });
       expect(check).toBeNull();
+    });
+
+    // NEW: Added missing test from README (Delete Validation)
+    it('should fail to delete a non-existent user', async () => {
+      // Using a random UUID that definitely doesn't exist
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+      await request(app.getHttpServer())
+        .delete(`/users/${nonExistentId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(404); // Expecting NotFoundException
     });
   });
 });
