@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Session } from '../sessions/session.entity';
-import { Exclude } from 'class-transformer';
 
 export enum UserStatus {
   ACTIVE = 'active',
