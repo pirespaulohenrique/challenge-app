@@ -48,3 +48,4 @@ postgres_data/
 
 # --- Vercel (if deployed later) ---
 .vercel
+
