@@ -2,11 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication Flow', () => {
   const timestamp = Date.now();
-  const newUser = {
-    username: `user_${timestamp}`,
+  // This user is for the Registration test
+  const registerUser = {
+    username: `reg_${timestamp}`,
     password: 'password123',
     firstName: 'Playwright',
-    lastName: 'Test',
+    lastName: 'Register',
   };
 
   test.beforeEach(async ({ page }) => {
@@ -38,47 +39,66 @@ test.describe('Authentication Flow', () => {
       .getByRole('button', { name: "Don't have an account? Sign Up" })
       .click();
 
-    await page.getByLabel('Username').fill(newUser.username);
-    await page.getByLabel('First Name').fill(newUser.firstName);
-    await page.getByLabel('Last Name').fill(newUser.lastName);
-    await page.getByLabel('Password', { exact: true }).fill(newUser.password);
-    await page.getByLabel('Confirm Password').fill(newUser.password);
+    await page.getByLabel('Username').fill(registerUser.username);
+    await page.getByLabel('First Name').fill(registerUser.firstName);
+    await page.getByLabel('Last Name').fill(registerUser.lastName);
+
+    await page.getByLabel(/^Password/i).fill(registerUser.password);
+    await page.getByLabel(/^Confirm Password/i).fill(registerUser.password);
 
     await page.getByRole('button', { name: 'Sign Up' }).click();
 
-    // Expect redirection to dashboard
     await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText('User Management')).toBeVisible();
+    // Use a unique element on the dashboard to verify
+    await expect(page.getByRole('button', { name: 'Add User' })).toBeVisible();
   });
 
-  test('should log in with existing user', async ({ page }) => {
-    // Assuming the user created in the previous step persists (or seed DB before test)
-    // Here we use the credentials we just defined, assuming order of execution or persistence
+  test('should log in with existing user', async ({ page, request }) => {
+    // SEED: Create a user strictly for this test to ensure isolation
+    const loginUser = {
+      username: `login_${Date.now()}`,
+      password: 'password123',
+      firstName: 'Login',
+      lastName: 'Tester',
+    };
+    const res = await request.post('http://localhost:3001/auth/register', {
+      data: loginUser,
+    });
+    expect(res.ok()).toBeTruthy();
 
-    await page.getByLabel('Username').fill(newUser.username);
-    await page.getByLabel('Password', { exact: true }).fill(newUser.password); // Using 'exact' to avoid confirm password label
+    await page.getByLabel('Username').fill(loginUser.username);
+    await page.getByLabel(/^Password/i).fill(loginUser.password);
 
     await page.getByRole('button', { name: 'Sign In' }).click();
 
     await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText('User Management')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add User' })).toBeVisible();
   });
 
-  test('should log out', async ({ page }) => {
-    // Perform login first
-    await page.getByLabel('Username').fill(newUser.username);
-    await page.getByLabel('Password', { exact: true }).fill(newUser.password);
+  test('should log out', async ({ page, request }) => {
+    // SEED: Create user
+    const logoutUser = {
+      username: `logout_${Date.now()}`,
+      password: 'password123',
+      firstName: 'Logout',
+      lastName: 'Tester',
+    };
+    await request.post('http://localhost:3001/auth/register', {
+      data: logoutUser,
+    });
+
+    // Login
+    await page.getByLabel('Username').fill(logoutUser.username);
+    await page.getByLabel(/^Password/i).fill(logoutUser.password);
     await page.getByRole('button', { name: 'Sign In' }).click();
     await expect(page).toHaveURL(/\/dashboard/);
 
     // Logout
     await page.getByLabel('Logout').click();
 
-    // Confirm dialog
     await expect(page.getByText('Confirm Logout')).toBeVisible();
     await page.getByRole('button', { name: 'Logout' }).click();
 
-    // Expect return to login
     await expect(page).toHaveURL('/');
     await expect(
       page.getByRole('heading', { name: 'Welcome Back' })

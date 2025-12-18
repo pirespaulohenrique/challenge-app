@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Dashboard Management', () => {
-  // Use a unique username for this suite
   const adminUser = {
     username: `admin_${Date.now()}`,
     password: 'password123',
@@ -11,26 +10,29 @@ test.describe('Dashboard Management', () => {
 
   test.beforeAll(async ({ request }) => {
     // SEED: Create a user via API to ensure we can log in
-    // This assumes backend is running on port 3001 as per README
     const res = await request.post('http://localhost:3001/auth/register', {
       data: adminUser,
     });
+    // Ensure seed was successful
     expect(res.ok()).toBeTruthy();
   });
 
   test.beforeEach(async ({ page }) => {
-    // Log in via UI before each dashboard test
     await page.goto('/');
     await page.getByLabel('Username').fill(adminUser.username);
-    await page.getByLabel('Password', { exact: true }).fill(adminUser.password);
+    await page.getByLabel(/^Password/i).fill(adminUser.password);
     await page.getByRole('button', { name: 'Sign In' }).click();
     await expect(page).toHaveURL(/\/dashboard/);
   });
 
   test('should display user list and stats', async ({ page }) => {
-    await expect(page.getByText('User Management')).toBeVisible();
-    await expect(page.getByText(`Total:`)).toBeVisible();
-    // Verify our own user is in the list
+    // FIX: strict mode violation. 'exact: true' will match "User Management" but NOT "USER MANAGEMENT" (TopBar)
+    await expect(
+      page.getByText('User Management', { exact: true })
+    ).toBeVisible();
+
+    // Matches "Total: 1" etc.
+    await expect(page.getByText(/^Total:/)).toBeVisible();
     await expect(
       page.getByRole('cell', { name: adminUser.username })
     ).toBeVisible();
@@ -46,12 +48,12 @@ test.describe('Dashboard Management', () => {
     await page.getByLabel('Username').fill(dashboardUser);
     await page.getByLabel('First Name').fill('Dash');
     await page.getByLabel('Last Name').fill('Board');
-    await page.getByLabel('Password', { exact: true }).fill('password123');
-    await page.getByLabel('Confirm Password').fill('password123');
+
+    await page.getByLabel(/^Password/i).fill('password123');
+    await page.getByLabel(/^Confirm Password/i).fill('password123');
 
     await page.getByRole('button', { name: 'Save' }).click();
 
-    // Verify modal closes and user appears
     await expect(
       page.getByRole('heading', { name: 'New User' })
     ).not.toBeVisible();
@@ -66,13 +68,14 @@ test.describe('Dashboard Management', () => {
     await page.getByLabel('Username').fill(victimUser);
     await page.getByLabel('First Name').fill('To');
     await page.getByLabel('Last Name').fill('Delete');
-    await page.getByLabel('Password', { exact: true }).fill('123456');
-    await page.getByLabel('Confirm Password').fill('123456');
+    await page.getByLabel(/^Password/i).fill('123456');
+    await page.getByLabel(/^Confirm Password/i).fill('123456');
     await page.getByRole('button', { name: 'Save' }).click();
+
+    // Wait for the user to appear in the table
     await expect(page.getByRole('cell', { name: victimUser })).toBeVisible();
 
     // 2. Find row containing this user and click delete
-    // We locate the row by the username text, then find the delete button within that row
     const row = page.getByRole('row', { name: victimUser });
     await row.getByTestId('DeleteIcon').click();
 
