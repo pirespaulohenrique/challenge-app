@@ -12,7 +12,7 @@ import { Session } from './sessions/session.entity';
     // 1. Load env variables globally
     ConfigModule.forRoot({
       isGlobal: true, // Makes env vars available everywhere
-      envFilePath: '.env', // Looks for the .env file in the root
+      envFilePath: ['../.env', '../.env.shared'],
     }),
 
     // 2. Configure TypeORM using those variables

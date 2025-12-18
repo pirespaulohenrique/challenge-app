@@ -20,13 +20,29 @@ This project is fully containerized. To start the entire stack (Database, Backen
     cd challenge-app
     ```
 
-2.  **Build and Run:**
+2.  **Configuration & Secrets**
+
+    This project uses a split configuration strategy:
+
+    - **`.env.shared`**: Contains non-sensitive defaults (ports, hostnames). **Committed to Git.**
+    - **`.env`**: Contains sensitive secrets (passwords, keys). **Ignored by Git.**
+
+    **Step 1:** Create a `.env` file in the project root.  
+    **Step 2:** Copy the following content into it and adjust the passwords if necessary.
+
+    ```bash
+    # Database Credentials
+    DATABASE_USER=admin
+    DATABASE_PASSWORD=password
+    ```
+
+3.  **Build and Run:**
 
     ```bash
     docker-compose up --build
     ```
 
-3.  **Access the Application:**
+4.  **Access the Application:**
     - **Frontend:** [http://localhost:3000](http://localhost:3000)
     - **Backend API:** [http://localhost:3001](http://localhost:3001)
 
@@ -49,6 +65,7 @@ challenge-app/
 │   ├── src/app/            # App Router Pages (Login, Dashboard)
 │   ├── src/context/        # Global State (Theme Persistence)
 │   ├── src/lib/            # Utilities (Fetch Client, API helpers)
+│   ├── src/__tests___/     # Jest unit tests
 │   └── tests/              # Playwright E2E Tests
 ├── docker-compose.yml      # Orchestration
 └── init.sql                # Database Initialization Script
@@ -66,26 +83,13 @@ Testing: Jest (Unit), Playwright (E2E)
 
 ## Design & Security Decisions
 
-1. Password Hashing (Security Improvement)
-   The initial requirements described the User Domain without a password field but required a password for the Frontend sign-up. To ensure production readiness:
+1. Input Integrity: Implemented strict input validation on both the Frontend (for UX) and Backend (via DTOs and pipes) to prevent SQL injection and ensure data integrity before it reaches the Service layer.
 
-Decision: I implemented Bcrypt hashing for password storage.
+2. Passwords: Passwords are hashed (using bcrypt) before saving. The password field is explicitly excluded (select: false) from API responses to prevent leakage.
 
-Implementation: Passwords are hashed before saving. The password field is explicitly excluded (select: false) from API responses to prevent leakage.
+3. Sensitive data (Database credentials) are managed via Environment Variables (.env) and Docker environment injection, ensuring the codebase contains no hardcoded secrets.
 
-2. Session Management
-   Token: The UUID of the Session entity is used as the authentication token.
-
-Validation: The backend enforces that Inactive users cannot create new sessions.
-
-3. Theme Customization
-   Persistence: A React Context (ThemeContext) wraps the application to handle Light/Dark modes. The user's preference is saved to localStorage, ensuring it persists even if the browser is closed and re-opened.
-
-4. Seamless Navigation
-   UX: The Sign-in/Sign-up page uses a single component with state toggling (isLogin) rather than separate routes. This provides the requested "seamless navigation" without page reloads.
-
-5. User record update time
-   Since the database provides a function for that, that field is updated automatically, with no code in the backend.
+4. Data Immutability: Leveraged Database constraints/ORM decorators to strictly enforce that creation_time is immutable and update_time is automatically managed, removing the risk of human error in the business logic.
 
 ## API Endpoints
 

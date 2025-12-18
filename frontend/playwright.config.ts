@@ -9,7 +9,7 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Define the port, defaulting to 3000 if not found in .env
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.FRONTEND_PORT || 3000;
 const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({

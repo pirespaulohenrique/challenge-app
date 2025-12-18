@@ -8,9 +8,11 @@ test.describe('Dashboard Management', () => {
     lastName: 'User',
   };
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
   test.beforeAll(async ({ request }) => {
     // SEED: Create a user via API to ensure we can log in
-    const res = await request.post('http://localhost:3001/auth/register', {
+    const res = await request.post(`${API_URL}/auth/register`, {
       data: adminUser,
     });
     // Ensure seed was successful

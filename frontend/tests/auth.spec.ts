@@ -10,6 +10,8 @@ test.describe('Authentication Flow', () => {
     lastName: 'Register',
   };
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
@@ -61,7 +63,7 @@ test.describe('Authentication Flow', () => {
       firstName: 'Login',
       lastName: 'Tester',
     };
-    const res = await request.post('http://localhost:3001/auth/register', {
+    const res = await request.post(`${API_URL}/auth/register`, {
       data: loginUser,
     });
     expect(res.ok()).toBeTruthy();
@@ -83,7 +85,7 @@ test.describe('Authentication Flow', () => {
       firstName: 'Logout',
       lastName: 'Tester',
     };
-    await request.post('http://localhost:3001/auth/register', {
+    await request.post(`${API_URL}/auth/register`, {
       data: logoutUser,
     });
 

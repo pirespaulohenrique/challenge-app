@@ -7,7 +7,6 @@ async function bootstrap() {
   app.enableCors(); // Enable CORS for frontend
   app.useGlobalPipes(new ValidationPipe());
 
-  // Use PORT env variable if it exists, otherwise default to 3000
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.API_PORT);
 }
 bootstrap();

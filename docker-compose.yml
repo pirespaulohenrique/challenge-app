@@ -2,9 +2,12 @@ services:
   db:
     image: postgres:15-alpine
     container_name: global-db
+    env_file:
+      - .env.shared
+      - .env
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: user_management
     ports:
       - "5432:5432"
@@ -17,13 +20,16 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: global-backend
+    env_file:
+      - .env.shared
+      - .env
     ports:
-      - "3001:3000"
+      - "${API_PORT}:3000"
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_USER: admin
-      DATABASE_PASSWORD: password
+      DATABASE_USER: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
       DATABASE_NAME: user_management
     depends_on:
       - db
@@ -32,11 +38,16 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: global-frontend
+    env_file:
+      - .env.shared
+      - .env
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT}:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     depends_on:
       - backend
 
