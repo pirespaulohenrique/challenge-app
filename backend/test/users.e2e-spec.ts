@@ -32,7 +32,12 @@ describe('Users Controller (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      })
+    );
     await app.init();
 
     userRepository = moduleFixture.get(getRepositoryToken(User));
@@ -149,7 +154,7 @@ describe('Users Controller (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/login')
         .send({ username: 'user_0', password: 'newpassword123' })
-        .expect(201);
+        .expect(200);
     });
   });
 

@@ -15,7 +15,12 @@ describe('Auth Controller (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true })); // Enable DTO validation
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      })
+    ); // Enable DTO validation
     await app.init();
 
     userRepository = moduleFixture.get(getRepositoryToken(User));
@@ -46,7 +51,7 @@ describe('Auth Controller (e2e)', () => {
         .send(validUser)
         .expect(201);
 
-      expect(response.body).toHaveProperty('id');
+      expect(response.body.user).toHaveProperty('id');
       expect(response.body.username).toEqual(validUser.username);
     });
 
@@ -80,7 +85,7 @@ describe('Auth Controller (e2e)', () => {
       const response = await request(app.getHttpServer())
         .post('/auth/login')
         .send({ username: validUser.username, password: validUser.password })
-        .expect(201);
+        .expect(200);
 
       expect(response.body).toHaveProperty('sessionId');
       sessionCookie = response.body.sessionId;
