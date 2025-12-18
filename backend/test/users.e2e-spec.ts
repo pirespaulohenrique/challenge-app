@@ -74,7 +74,6 @@ describe('Users Controller (e2e)', () => {
       expect(response.body.meta.currentPage).toBe(1);
     });
 
-    // NEW: Added missing test from README (Pagination Page 2)
     it('should return the second page of users', async () => {
       const response = await request(app.getHttpServer())
         .get('/users?limit=5&page=2')
@@ -82,7 +81,6 @@ describe('Users Controller (e2e)', () => {
         .expect(200);
       expect(response.body.data.length).toBe(5);
       expect(response.body.meta.currentPage).toBe(2);
-      // Ensure it's not the same data as page 1 (optional check)
       expect(response.body.data[0].username).not.toBe('user_0');
     });
 
@@ -125,6 +123,22 @@ describe('Users Controller (e2e)', () => {
         .expect(201);
       expect(res.body.status).toEqual('inactive');
     });
+
+    // NEW: Added missing test case for active user creation
+    it('should create an active user via Admin', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          username: 'active_user',
+          password: 'password123',
+          firstName: 'Active',
+          lastName: 'User',
+          status: 'active',
+        })
+        .expect(201);
+      expect(res.body.status).toEqual('active');
+    });
   });
 
   describe('PUT /users/:id', () => {
@@ -143,14 +157,12 @@ describe('Users Controller (e2e)', () => {
     });
 
     it('should reset user password', async () => {
-      // 1. Reset password
       await request(app.getHttpServer())
         .put(`/users/${targetId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ password: 'newpassword123' })
         .expect(200);
 
-      // 2. Verify login with new password
       await request(app.getHttpServer())
         .post('/auth/login')
         .send({ username: 'user_0', password: 'newpassword123' })
@@ -170,14 +182,12 @@ describe('Users Controller (e2e)', () => {
       expect(check).toBeNull();
     });
 
-    // NEW: Added missing test from README (Delete Validation)
     it('should fail to delete a non-existent user', async () => {
-      // Using a random UUID that definitely doesn't exist
       const nonExistentId = '00000000-0000-0000-0000-000000000000';
       await request(app.getHttpServer())
         .delete(`/users/${nonExistentId}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(404); // Expecting NotFoundException
+        .expect(404);
     });
   });
 });

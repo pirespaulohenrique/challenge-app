@@ -88,6 +88,47 @@ describe('AuthPage Component', () => {
     expect(fetchClient).not.toHaveBeenCalled();
   });
 
+  // NEW: Added missing test for short username
+  test('validates short username on Sign Up', async () => {
+    render(<AuthPage />);
+    fireEvent.click(screen.getByText(/don't have an account/i));
+
+    await userEvent.type(screen.getByLabelText(/^Username$/i), 'ab'); // Too short
+    await userEvent.type(screen.getByLabelText(/first name/i), 'Test');
+    await userEvent.type(screen.getByLabelText(/last name/i), 'User');
+    await userEvent.type(screen.getByLabelText(/^Password$/i), 'password123');
+    await userEvent.type(
+      screen.getByLabelText(/^Confirm Password$/i),
+      'password123'
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(
+      await screen.findByText(/username must be at least/i)
+    ).toBeInTheDocument();
+    expect(fetchClient).not.toHaveBeenCalled();
+  });
+
+  // NEW: Added missing test for short password
+  test('validates short password on Sign Up', async () => {
+    render(<AuthPage />);
+    fireEvent.click(screen.getByText(/don't have an account/i));
+
+    await userEvent.type(screen.getByLabelText(/^Username$/i), 'testuser');
+    await userEvent.type(screen.getByLabelText(/first name/i), 'Test');
+    await userEvent.type(screen.getByLabelText(/last name/i), 'User');
+    await userEvent.type(screen.getByLabelText(/^Password$/i), '123'); // Too short
+    await userEvent.type(screen.getByLabelText(/^Confirm Password$/i), '123');
+
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(
+      await screen.findByText(/password must be at least/i)
+    ).toBeInTheDocument();
+    expect(fetchClient).not.toHaveBeenCalled();
+  });
+
   test('validates password mismatch on Sign Up', async () => {
     render(<AuthPage />);
 
@@ -97,7 +138,6 @@ describe('AuthPage Component', () => {
     await userEvent.type(screen.getByLabelText(/first name/i), 'Test');
     await userEvent.type(screen.getByLabelText(/last name/i), 'User');
 
-    // Exact match regex to avoid selecting the eye icon
     await userEvent.type(screen.getByLabelText(/^Password$/i), 'password123');
     await userEvent.type(
       screen.getByLabelText(/^Confirm Password$/i),

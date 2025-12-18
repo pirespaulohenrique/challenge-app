@@ -162,8 +162,6 @@ These tests verify that the controllers, services, and database all work togethe
 
 ### Frontend Testing Strategy
 
-We use a two-layered approach to ensure reliability and speed.
-
 1.  **Ensure the application is running.** The Docker containers must be up.
 2.  **Run the tests:**
 
