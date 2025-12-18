@@ -7,6 +7,6 @@ async function bootstrap() {
   app.enableCors(); // Enable CORS for frontend
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(process.env.API_PORT);
+  await app.listen(3000);
 }
 bootstrap();

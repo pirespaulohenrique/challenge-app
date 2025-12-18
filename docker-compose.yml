@@ -3,14 +3,15 @@ services:
     image: postgres:15-alpine
     container_name: global-db
     env_file:
-      - .env.shared
       - .env
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: user_management
+      # Syntax: ${VARIABLE_NAME:-default_value_if_not_set}
+      POSTGRES_USER: ${DATABASE_USER:-admin}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-password}
+      POSTGRES_DB: ${DATABASE_NAME:-user_management}
     ports:
-      - "5432:5432"
+      # If DATABASE_PORT is not set in your PC, use 5432
+      - "${DATABASE_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -21,16 +22,17 @@ services:
       dockerfile: Dockerfile
     container_name: global-backend
     env_file:
-      - .env.shared
       - .env
     ports:
-      - "${API_PORT}:3000"
+      # Defaults to 3001 on your host machine
+      - "${API_PORT:-3001}:3000"
     environment:
+      # These refer to the service name 'db' internally, so hardcoding 'db' is usually fine
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-      DATABASE_USER: ${DB_USER}
-      DATABASE_PASSWORD: ${DB_PASSWORD}
-      DATABASE_NAME: user_management
+      DATABASE_USER: ${DATABASE_USER:-admin}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-password}
+      DATABASE_NAME: ${DATABASE_NAME:-user_management}
     depends_on:
       - db
 
@@ -39,15 +41,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     container_name: global-frontend
     env_file:
-      - .env.shared
       - .env
     ports:
-      - "${FRONTEND_PORT}:3000"
+      # Defaults to 3000 on your host machine
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     depends_on:
       - backend
 

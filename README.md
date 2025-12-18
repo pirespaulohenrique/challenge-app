@@ -22,18 +22,16 @@ This project is fully containerized. To start the entire stack (Database, Backen
 
 2.  **Configuration & Secrets**
 
-    This project uses a split configuration strategy:
-
-    - **`.env.shared`**: Contains non-sensitive defaults (ports, hostnames). **Committed to Git.**
-    - **`.env`**: Contains sensitive secrets (passwords, keys). **Ignored by Git.**
+    If you don't provide a .env file, the database user/password defaults to admin/password.  
+    **`.env`**: Contains sensitive secrets (passwords, keys). **Ignored by Git.**
 
     **Step 1:** Create a `.env` file in the project root.  
     **Step 2:** Copy the following content into it and adjust the passwords if necessary.
 
     ```bash
     # Database Credentials
-    DATABASE_USER=admin
-    DATABASE_PASSWORD=password
+    DATABASE_USER=your_db_user
+    DATABASE_PASSWORD=your_db_password
     ```
 
 3.  **Build and Run:**
