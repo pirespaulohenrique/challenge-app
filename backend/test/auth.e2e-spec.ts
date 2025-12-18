@@ -52,7 +52,7 @@ describe('Auth Controller (e2e)', () => {
         .expect(201);
 
       expect(response.body.user).toHaveProperty('id');
-      expect(response.body.username).toEqual(validUser.username);
+      expect(response.body.user.username).toEqual(validUser.username);
     });
 
     it('should fail if username is too short', async () => {

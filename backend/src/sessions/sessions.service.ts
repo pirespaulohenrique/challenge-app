@@ -8,7 +8,7 @@ import { User } from '../users/user.entity';
 export class SessionsService {
   constructor(
     @InjectRepository(Session)
-    private sessionsRepository: Repository<Session>,
+    private sessionsRepository: Repository<Session>
   ) {}
 
   async createSession(user: User): Promise<Session> {
@@ -17,9 +17,14 @@ export class SessionsService {
   }
 
   async terminateSession(sessionId: string): Promise<void> {
-    const session = await this.sessionsRepository.findOne({ where: { id: sessionId } });
+    const session = await this.sessionsRepository.findOne({
+      where: { id: sessionId },
+    });
     if (!session) {
-      throw new NotFoundException('Session not found');
+      // If session is not found, we can consider it "already terminated".
+      // Just return silently instead of throwing 404.
+      // throw new NotFoundException('Session not found');
+      return;
     }
     session.terminatedAt = new Date();
     await this.sessionsRepository.save(session);
