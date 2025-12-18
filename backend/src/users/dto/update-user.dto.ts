@@ -11,14 +11,17 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(6, { message: 'Username must be at least 6 characters long' })
-  username: string;
+  @IsOptional()
+  username?: string;
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   firstName?: string;
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   lastName?: string;
 
   @IsEnum(UserStatus)

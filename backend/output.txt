@@ -1,0 +1,202 @@
+
+> backend@0.0.1 test:e2e
+> cross-env DATABASE_NAME=user_management jest --config ./test/jest-e2e.json
+
+[Nest] 20024  - 18/12/2025, 15:21:36   ERROR [ExceptionsHandler] Provided "skip" value is not a number. Please provide a numeric value.
+TypeORMError: Provided "skip" value is not a number. Please provide a numeric value.
+    at SelectQueryBuilder.skip (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:1511:19)
+    at SelectQueryBuilder.applyFindOptions (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:3280:22)
+    at SelectQueryBuilder.setFindOptions (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:106:14)
+    at EntityManager.findAndCount (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\entity-manager\EntityManager.ts:1153:14)
+    at Repository.findAndCount (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\repository\Repository.ts:593:29)
+    at UsersService.findAll (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\users\users.service.ts:46:54)
+    at UsersController.findAll (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\users\users.controller.ts:34:30)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[Nest] 20024  - 18/12/2025, 15:21:36   ERROR [ExceptionsHandler] Provided "skip" value is not a number. Please provide a numeric value.
+TypeORMError: Provided "skip" value is not a number. Please provide a numeric value.
+    at SelectQueryBuilder.skip (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:1511:19)
+    at SelectQueryBuilder.applyFindOptions (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:3280:22)
+    at SelectQueryBuilder.setFindOptions (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:106:14)
+    at EntityManager.findAndCount (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\entity-manager\EntityManager.ts:1153:14)
+    at Repository.findAndCount (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\repository\Repository.ts:593:29)
+    at UsersService.findAll (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\users\users.service.ts:46:54)
+    at UsersController.findAll (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\users\users.controller.ts:34:30)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[Nest] 20024  - 18/12/2025, 15:21:36   ERROR [ExceptionsHandler] Provided "skip" value is not a number. Please provide a numeric value.
+TypeORMError: Provided "skip" value is not a number. Please provide a numeric value.
+    at SelectQueryBuilder.skip (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:1511:19)
+    at SelectQueryBuilder.applyFindOptions (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:3280:22)
+    at SelectQueryBuilder.setFindOptions (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:106:14)
+    at EntityManager.findAndCount (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\entity-manager\EntityManager.ts:1153:14)
+    at Repository.findAndCount (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\repository\Repository.ts:593:29)
+    at UsersService.findAll (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\users\users.service.ts:46:54)
+    at UsersController.findAll (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\users\users.controller.ts:34:30)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+FAIL test/users.e2e-spec.ts
+  ΓùÅ Users Controller (e2e) ΓÇ║ GET /users ΓÇ║ should return paginated list (page 1)
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+      65 |         .get('/users?limit=5')
+      66 |         .set('Authorization', `Bearer ${adminToken}`)
+    > 67 |         .expect(200);
+         |          ^
+      68 |       expect(response.body.data.length).toBe(5);
+      69 |       expect(response.body.meta.currentPage).toBe(1);
+      70 |     });
+
+      at Object.<anonymous> (users.e2e-spec.ts:67:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (../node_modules/supertest/lib/test.js:120:14)
+
+  ΓùÅ Users Controller (e2e) ΓÇ║ GET /users ΓÇ║ should sort users by username ASC
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+      86 |         .get('/users?orderBy=username&order=ASC')
+      87 |         .set('Authorization', `Bearer ${adminToken}`)
+    > 88 |         .expect(200);
+         |          ^
+      89 |       const data = response.body.data;
+      90 |       expect(
+      91 |         data[0].username.localeCompare(data[1].username)
+
+      at Object.<anonymous> (users.e2e-spec.ts:88:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (../node_modules/supertest/lib/test.js:120:14)
+
+  ΓùÅ Users Controller (e2e) ΓÇ║ GET /users ΓÇ║ should sort users by createdAt DESC
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+       97 |         .get('/users?orderBy=createdAt&order=DESC')
+       98 |         .set('Authorization', `Bearer ${adminToken}`)
+    >  99 |         .expect(200);
+          |          ^
+      100 |
+      101 |       const data = response.body.data;
+      102 |       const date1 = new Date(data[0].createdAt).getTime();
+
+      at Object.<anonymous> (users.e2e-spec.ts:99:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (../node_modules/supertest/lib/test.js:120:14)
+
+  ΓùÅ Users Controller (e2e) ΓÇ║ PUT /users/:id ΓÇ║ should reset user password
+
+    expected 201 "Created", got 200 "OK"
+
+      150 |         .post('/auth/login')
+      151 |         .send({ username: 'user_0', password: 'newpassword123' })
+    > 152 |         .expect(201);
+          |          ^
+      153 |     });
+      154 |   });
+      155 |
+
+      at Object.<anonymous> (users.e2e-spec.ts:152:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (../node_modules/supertest/lib/test.js:120:14)
+
+[Nest] 27232  - 18/12/2025, 15:21:36   ERROR [ExceptionsHandler] invalid input syntax for type uuid: "undefined"
+QueryFailedError: invalid input syntax for type uuid: "undefined"
+    at PostgresQueryRunner.query (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\driver\postgres\PostgresQueryRunner.ts:325:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at SelectQueryBuilder.loadRawResults (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:3868:25)
+    at SelectQueryBuilder.executeEntitiesAndRawResults (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:3614:26)
+    at SelectQueryBuilder.getRawAndEntities (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:1671:29)
+    at SelectQueryBuilder.getOne (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\query-builder\SelectQueryBuilder.ts:1698:25)
+    at SessionsService.terminateSession (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\sessions\sessions.service.ts:20:21)
+    at AuthService.logout (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\auth\auth.service.ts:55:5)
+    at AuthController.logout (C:\Users\pires\Dev\1global\challenge\challenge-app\backend\src\auth\auth.controller.ts:32:7)
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\Users\pires\Dev\1global\challenge\challenge-app\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17
+FAIL test/auth.e2e-spec.ts
+  ΓùÅ Auth Controller (e2e) ΓÇ║ /auth/register (POST) ΓÇ║ should register a new user successfully
+
+    expect(received).toHaveProperty(path)
+
+    Expected path: "id"
+    Received path: []
+
+    Received value: {"sessionId": "aa46a535-8ad0-489c-bd8e-9f0227429578", "user": {"createdAt": "2025-12-18T21:21:36.261Z", "firstName": "Test", "id": "c0886f65-e07c-4d48-8bb3-d7f46a5a4f32", "lastName": "User", "loginsCounter": 1, "status": "active", "updatedAt": "2025-12-18T21:21:36.261Z", "username": "test_auth_user"}}
+
+      47 |         .expect(201);
+      48 |
+    > 49 |       expect(response.body).toHaveProperty('id');
+         |                             ^
+      50 |       expect(response.body.username).toEqual(validUser.username);
+      51 |     });
+      52 |
+
+      at Object.<anonymous> (auth.e2e-spec.ts:49:29)
+
+  ΓùÅ Auth Controller (e2e) ΓÇ║ /auth/login (POST) ΓÇ║ should login successfully with valid credentials
+
+    expected 201 "Created", got 200 "OK"
+
+      81 |         .post('/auth/login')
+      82 |         .send({ username: validUser.username, password: validUser.password })
+    > 83 |         .expect(201);
+         |          ^
+      84 |
+      85 |       expect(response.body).toHaveProperty('sessionId');
+      86 |       sessionCookie = response.body.sessionId;
+
+      at Object.<anonymous> (auth.e2e-spec.ts:83:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (../node_modules/supertest/lib/test.js:120:14)
+
+  ΓùÅ Auth Controller (e2e) ΓÇ║ /auth/logout (POST) ΓÇ║ should logout successfully
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+      128 |         .post('/auth/logout')
+      129 |         .set('Authorization', `Bearer ${sessionCookie}`)
+    > 130 |         .expect(200);
+          |          ^
+      131 |     });
+      132 |   });
+      133 | });
+
+      at Object.<anonymous> (auth.e2e-spec.ts:130:10)
+      ----
+      at Test._assertStatus (../node_modules/supertest/lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertest/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/test.js:164:23)
+      at Server.localAssert (../node_modules/supertest/lib/test.js:120:14)
+
+Test Suites: 2 failed, 2 total
+Tests:       7 failed, 11 passed, 18 total
+Snapshots:   0 total
+Time:        4.913 s, estimated 6 s
+Ran all test suites.

@@ -15,15 +15,15 @@ describe('Auth Controller (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe()); // Enable DTO validation
+    app.useGlobalPipes(new ValidationPipe({ transform: true })); // Enable DTO validation
     await app.init();
 
     userRepository = moduleFixture.get(getRepositoryToken(User));
-    await userRepository.query(`DELETE FROM user`); // Start clean
+    await userRepository.query(`DELETE FROM users`); // Start clean
   });
 
   afterAll(async () => {
-    await userRepository.query(`DELETE FROM user`);
+    await userRepository.query(`DELETE FROM users`);
     await app.close();
   });
 
@@ -127,7 +127,7 @@ describe('Auth Controller (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/logout')
         .set('Authorization', `Bearer ${sessionCookie}`)
-        .expect(201);
+        .expect(200);
     });
   });
 });

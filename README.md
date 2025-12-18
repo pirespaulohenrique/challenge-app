@@ -118,7 +118,12 @@ npm install
 
 # Run tests
 npm run test
+npm run test:e2e
 ```
+
+#### Local Auth Tests
+
+_Located in: `backend/src/auth/auth.service.spec.ts`_
 
 #### End-to-End (API) Tests
 
@@ -126,12 +131,7 @@ _Located in: `backend/test/`_
 
 These tests verify that the controllers, services, and database all work together correctly.
 
-**Authentication Module (`auth.e2e-spec.ts`)**
-Command:
-
-```bash
-npm run test:e2e -- backend/test/auth.e2e-spec.ts
-```
+**_Authentication Module_**
 
 - **`POST /auth/login`**:
   - [x] Success with valid credentials.
@@ -145,12 +145,7 @@ npm run test:e2e -- backend/test/auth.e2e-spec.ts
 - **`POST /auth/logout`**:
   - [x] Invalidation of the current session.
 
-**User Management Module (`users.e2e-spec.ts`)**
-Command:
-
-```bash
-npm run test:e2e -- backend/test/users.e2e-spec.ts
-```
+**_User Management Module_**
 
 - **`GET /users`**:
   - [x] Default fetch (page 1).

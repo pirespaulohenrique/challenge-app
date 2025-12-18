@@ -32,11 +32,11 @@ describe('Users Controller (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
 
     userRepository = moduleFixture.get(getRepositoryToken(User));
-    await userRepository.query(`DELETE FROM user`);
+    await userRepository.query(`DELETE FROM users`);
 
     // Create Admin
     await request(app.getHttpServer()).post('/auth/register').send({
@@ -55,7 +55,7 @@ describe('Users Controller (e2e)', () => {
   });
 
   afterAll(async () => {
-    await userRepository.query(`DELETE FROM user`);
+    await userRepository.query(`DELETE FROM users`);
     await app.close();
   });
 
@@ -112,7 +112,7 @@ describe('Users Controller (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'dash_user',
-          password: 'pw',
+          password: 'password123',
           firstName: 'F',
           lastName: 'L',
           status: 'inactive',

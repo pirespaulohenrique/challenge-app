@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
+import { UserStatus } from '../user.entity';
 
 export class CreateUserDto {
   @IsString()
@@ -18,4 +25,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
+
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus;
 }

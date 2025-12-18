@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -95,7 +95,10 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<void> {
-    await this.usersRepository.delete(id);
+    const result = await this.usersRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID "${id}" not found`);
+    }
   }
 
   async incrementLoginCounter(userId: string): Promise<void> {
