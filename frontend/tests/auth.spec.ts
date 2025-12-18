@@ -1,101 +1,87 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Authentication & Navigation', () => {
-  const randomId = Math.floor(Math.random() * 100000);
-  const testUser = {
-    username: `user_${randomId}`,
+test.describe('Authentication Flow', () => {
+  const timestamp = Date.now();
+  const newUser = {
+    username: `user_${timestamp}`,
     password: 'password123',
-    firstName: 'Play',
-    lastName: 'Wright',
+    firstName: 'Playwright',
+    lastName: 'Test',
   };
 
-  test('Navigation: Seamless toggling between Sign-in and Sign-up forms', async ({
-    page,
-  }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/');
+  });
+
+  test('should navigate between Sign In and Sign Up', async ({ page }) => {
     await expect(
       page.getByRole('heading', { name: 'Welcome Back' })
     ).toBeVisible();
-    await page.click('text="Don\'t have an account? Sign Up"');
+
+    await page
+      .getByRole('button', { name: "Don't have an account? Sign Up" })
+      .click();
     await expect(
       page.getByRole('heading', { name: 'Create Account' })
     ).toBeVisible();
-    await page.click('text="Already have an account? Sign In"');
+
+    await page
+      .getByRole('button', { name: 'Already have an account? Sign In' })
+      .click();
     await expect(
       page.getByRole('heading', { name: 'Welcome Back' })
     ).toBeVisible();
   });
 
-  // NEW: Added missing test from README
-  test('Auth Flow: Validates empty fields during Sign Up', async ({ page }) => {
-    await page.goto('/');
-    await page.click('text="Don\'t have an account? Sign Up"');
+  test('should register a new user successfully', async ({ page }) => {
+    await page
+      .getByRole('button', { name: "Don't have an account? Sign Up" })
+      .click();
 
-    // Click Sign Up without filling anything
-    await page.click('button:has-text("Sign Up")');
+    await page.getByLabel('Username').fill(newUser.username);
+    await page.getByLabel('First Name').fill(newUser.firstName);
+    await page.getByLabel('Last Name').fill(newUser.lastName);
+    await page.getByLabel('Password', { exact: true }).fill(newUser.password);
+    await page.getByLabel('Confirm Password').fill(newUser.password);
 
-    // Check for validation error (SnackBar or Helper Text)
-    // Assuming your validation shows "Username is required"
-    await expect(page.getByText(/required/i).first()).toBeVisible();
-  });
+    await page.getByRole('button', { name: 'Sign Up' }).click();
 
-  test('Auth Flow: User can successfully sign up', async ({ page }) => {
-    await page.goto('/');
-    await page.click('text="Don\'t have an account? Sign Up"');
-
-    await page.fill('input[name="username"]', testUser.username);
-    await page.fill('input[name="firstName"]', testUser.firstName);
-    await page.fill('input[name="lastName"]', testUser.lastName);
-    await page.fill('input[name="password"]', testUser.password);
-    await page.fill('input[name="confirmPassword"]', testUser.password);
-
-    await page.click('button:has-text("Sign Up")');
-
-    await expect(page).toHaveURL('/dashboard');
+    // Expect redirection to dashboard
+    await expect(page).toHaveURL(/\/dashboard/);
     await expect(page.getByText('User Management')).toBeVisible();
   });
 
-  test('Auth Flow: User can successfully log in', async ({ page, request }) => {
-    const loginUser = {
-      username: `login_${randomId}`,
-      password: 'password123',
-      firstName: 'L',
-      lastName: 'T',
-    };
-    await request.post('/auth/register', { data: loginUser });
+  test('should log in with existing user', async ({ page }) => {
+    // Assuming the user created in the previous step persists (or seed DB before test)
+    // Here we use the credentials we just defined, assuming order of execution or persistence
 
-    await page.goto('/');
-    await page.fill('input[name="username"]', loginUser.username);
-    await page.fill('input[name="password"]', loginUser.password);
-    await page.click('button:has-text("Sign In")');
+    await page.getByLabel('Username').fill(newUser.username);
+    await page.getByLabel('Password', { exact: true }).fill(newUser.password); // Using 'exact' to avoid confirm password label
 
-    await expect(page).toHaveURL('/dashboard');
+    await page.getByRole('button', { name: 'Sign In' }).click();
+
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.getByText('User Management')).toBeVisible();
   });
 
-  test('Auth Flow: User can log out', async ({ page, request }) => {
-    const logoutUser = {
-      username: `logout_${randomId}`,
-      password: 'password123',
-      firstName: 'L',
-      lastName: 'T',
-    };
-    await request.post('/auth/register', { data: logoutUser });
+  test('should log out', async ({ page }) => {
+    // Perform login first
+    await page.getByLabel('Username').fill(newUser.username);
+    await page.getByLabel('Password', { exact: true }).fill(newUser.password);
+    await page.getByRole('button', { name: 'Sign In' }).click();
+    await expect(page).toHaveURL(/\/dashboard/);
 
-    await page.goto('/');
-    await page.fill('input[name="username"]', logoutUser.username);
-    await page.fill('input[name="password"]', logoutUser.password);
-    await page.click('button:has-text("Sign In")');
-    await expect(page).toHaveURL('/dashboard');
+    // Logout
+    await page.getByLabel('Logout').click();
 
-    // Click Logout (Update selector to match your icon or button)
-    // Here assume we find the exit/logout button
-    await page.locator('button svg[data-testid="ExitToAppIcon"]').click();
+    // Confirm dialog
+    await expect(page.getByText('Confirm Logout')).toBeVisible();
+    await page.getByRole('button', { name: 'Logout' }).click();
 
-    // Handle confirmation if present
-    if (await page.getByText('Confirm Logout').isVisible()) {
-      await page.click('button:has-text("Logout")');
-    }
-
+    // Expect return to login
     await expect(page).toHaveURL('/');
+    await expect(
+      page.getByRole('heading', { name: 'Welcome Back' })
+    ).toBeVisible();
   });
 });

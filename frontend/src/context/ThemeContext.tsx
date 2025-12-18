@@ -1,5 +1,11 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Roboto } from 'next/font/google';
@@ -15,10 +21,17 @@ interface ThemeContextType {
   mode: ThemeMode;
   toggleTheme: () => void;
 }
-const ThemeContext = createContext<ThemeContextType>({ mode: 'light', toggleTheme: () => {} });
+export const ThemeContext = createContext<ThemeContextType>({
+  mode: 'light',
+  toggleTheme: () => {},
+});
 export const useThemeContext = () => useContext(ThemeContext);
 
-export function ThemeContextProvider({ children }: { children: React.ReactNode }) {
+export function ThemeContextProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [mode, setMode] = useState<ThemeMode>('light');
   useEffect(() => {
     const savedMode = localStorage.getItem('themeMode') as ThemeMode;
@@ -29,13 +42,17 @@ export function ThemeContextProvider({ children }: { children: React.ReactNode }
     setMode(newMode);
     localStorage.setItem('themeMode', newMode);
   };
-  const theme = useMemo(() => createTheme({
-    typography: { fontFamily: roboto.style.fontFamily },
-    palette: {
-      mode,
-      primary: { main: '#1976d2' },
-    },
-  }), [mode]);
+  const theme = useMemo(
+    () =>
+      createTheme({
+        typography: { fontFamily: roboto.style.fontFamily },
+        palette: {
+          mode,
+          primary: { main: '#1976d2' },
+        },
+      }),
+    [mode]
+  );
 
   return (
     <ThemeContext.Provider value={{ mode, toggleTheme }}>

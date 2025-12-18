@@ -18,8 +18,8 @@ import {
   IconButton,
 } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Visibility from '@mui/icons-material/Visibility'; // Icon for "Show"
-import VisibilityOff from '@mui/icons-material/VisibilityOff'; // Icon for "Hide"
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { fetchClient } from '@/lib/fetchClient';
 import { validateUserForm } from '@/lib/validation';
 
@@ -61,7 +61,6 @@ export default function AuthPage() {
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    // Reset form and visibility states
     setFormData((prev) => ({
       ...prev,
       password: '',
@@ -92,12 +91,10 @@ export default function AuthPage() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // handlers for toggling visibility
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConfirmPassword = () =>
     setShowConfirmPassword((show) => !show);
 
-  // Prevent default behavior on mouse down (prevents focus loss)
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -107,15 +104,12 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Basic Login Check (Login only needs fields to be present)
     if (isLogin) {
       if (!formData.username || !formData.password) {
         showMessage('Username and Password are required');
         return;
       }
-    }
-    // 2. Sign Up Check (Uses strict central rules)
-    else {
+    } else {
       const validation = validateUserForm(
         {
           username: formData.username,
@@ -125,7 +119,7 @@ export default function AuthPage() {
           lastName: formData.lastName,
         },
         true
-      ); // true = Create Mode
+      );
 
       if (!validation.isValid) {
         showMessage(validation.error || 'Validation failed');
@@ -244,6 +238,7 @@ export default function AuthPage() {
                   disabled={isLoading}
                   value={formData.username}
                   onChange={handleChange}
+                  inputProps={{ 'aria-label': 'username' }}
                 />
 
                 {!isLogin && (
@@ -257,6 +252,7 @@ export default function AuthPage() {
                       disabled={isLoading}
                       value={formData.firstName}
                       onChange={handleChange}
+                      inputProps={{ 'aria-label': 'first name' }}
                     />
                     <TextField
                       margin="normal"
@@ -267,6 +263,7 @@ export default function AuthPage() {
                       disabled={isLoading}
                       value={formData.lastName}
                       onChange={handleChange}
+                      inputProps={{ 'aria-label': 'last name' }}
                     />
                   </>
                 )}
@@ -278,12 +275,11 @@ export default function AuthPage() {
                   fullWidth
                   name="password"
                   label="Password"
-                  // UPDATE: Dynamic type
                   type={showPassword ? 'text' : 'password'}
                   disabled={isLoading}
                   value={formData.password}
                   onChange={handleChange}
-                  // UPDATE: Add Eye Icon
+                  inputProps={{ 'aria-label': 'password' }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -308,12 +304,11 @@ export default function AuthPage() {
                     fullWidth
                     name="confirmPassword"
                     label="Confirm Password"
-                    // UPDATE: Dynamic type
                     type={showConfirmPassword ? 'text' : 'password'}
                     disabled={isLoading}
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    // UPDATE: Add Eye Icon
+                    inputProps={{ 'aria-label': 'confirm password' }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">

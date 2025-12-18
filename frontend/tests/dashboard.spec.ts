@@ -1,92 +1,89 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Dashboard (Mocked API)', () => {
-  // Define mock data
-  const mockUsers = [
-    {
-      id: '1',
-      username: 'alice',
-      firstName: 'Alice',
-      lastName: 'A',
-      status: 'active',
-      loginsCounter: 5,
-      createdAt: '2025-01-01',
-      updatedAt: '2025-01-01',
-    },
-    {
-      id: '2',
-      username: 'bob',
-      firstName: 'Bob',
-      lastName: 'B',
-      status: 'inactive',
-      loginsCounter: 0,
-      createdAt: '2025-02-01',
-      updatedAt: '2025-02-01',
-    },
-  ];
+test.describe('Dashboard Management', () => {
+  // Use a unique username for this suite
+  const adminUser = {
+    username: `admin_${Date.now()}`,
+    password: 'password123',
+    firstName: 'Admin',
+    lastName: 'User',
+  };
+
+  test.beforeAll(async ({ request }) => {
+    // SEED: Create a user via API to ensure we can log in
+    // This assumes backend is running on port 3001 as per README
+    const res = await request.post('http://localhost:3001/auth/register', {
+      data: adminUser,
+    });
+    expect(res.ok()).toBeTruthy();
+  });
 
   test.beforeEach(async ({ page }) => {
-    // 1. Mock the "Get Users" API call
-    // Whenever the frontend asks for /users..., return our mockUsers
-    await page.route('**/users?*', async (route) => {
-      const json = {
-        data: mockUsers,
-        meta: { totalItems: 2, currentPage: 1, lastPage: 1 },
-      };
-      await route.fulfill({ json });
-    });
-
-    // 2. Mock LocalStorage to simulate being "Logged In"
-    // We bypass the login screen by injecting the session
-    await page.addInitScript(() => {
-      window.localStorage.setItem('sessionId', 'fake-session-token');
-      window.localStorage.setItem(
-        'user',
-        JSON.stringify({ username: 'admin' })
-      );
-    });
-
-    // 3. Go straight to dashboard
-    await page.goto('/dashboard');
+    // Log in via UI before each dashboard test
+    await page.goto('/');
+    await page.getByLabel('Username').fill(adminUser.username);
+    await page.getByLabel('Password', { exact: true }).fill(adminUser.password);
+    await page.getByRole('button', { name: 'Sign In' }).click();
+    await expect(page).toHaveURL(/\/dashboard/);
   });
 
-  test('should display the user list correctly', async ({ page }) => {
-    // Check if Alice and Bob are visible
-    await expect(page.getByText('alice')).toBeVisible();
-    await expect(page.getByText('bob')).toBeVisible();
-
-    // Check if the Total count matches our mock
-    await expect(page.getByText('Total: 2')).toBeVisible();
-  });
-
-  test('should open Add User modal', async ({ page }) => {
-    await page.click('button:has-text("Add User")');
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByText('New User')).toBeVisible();
-  });
-
-  test('should validate input in Add User modal', async ({ page }) => {
-    await page.click('button:has-text("Add User")');
-
-    // Click Save empty
-    await page.click('button:has-text("Save")');
-
-    // Expect error
-    await expect(page.getByRole('alert')).toContainText('Username is required');
-  });
-
-  test('should trigger delete confirmation', async ({ page }) => {
-    // Click the delete icon (using aria-label is best, or finding by icon class)
-    // Since we added aria-label in previous steps, we can use it:
-    // If not, we can select by the SVG or the button index.
-
-    // Let's assume we click the second delete button (for Bob)
-    const deleteButtons = page.locator('button svg[data-testid="DeleteIcon"]');
-    await deleteButtons.nth(1).click();
-
-    await expect(page.getByText('Confirm Deletion')).toBeVisible();
+  test('should display user list and stats', async ({ page }) => {
+    await expect(page.getByText('User Management')).toBeVisible();
+    await expect(page.getByText(`Total:`)).toBeVisible();
+    // Verify our own user is in the list
     await expect(
-      page.getByText('Are you sure you want to delete this user?')
+      page.getByRole('cell', { name: adminUser.username })
     ).toBeVisible();
+  });
+
+  test('should create a new user via dashboard', async ({ page }) => {
+    const dashboardUser = `dash_${Date.now()}`;
+
+    await page.getByRole('button', { name: 'Add User' }).click();
+
+    await expect(page.getByRole('heading', { name: 'New User' })).toBeVisible();
+
+    await page.getByLabel('Username').fill(dashboardUser);
+    await page.getByLabel('First Name').fill('Dash');
+    await page.getByLabel('Last Name').fill('Board');
+    await page.getByLabel('Password', { exact: true }).fill('password123');
+    await page.getByLabel('Confirm Password').fill('password123');
+
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    // Verify modal closes and user appears
+    await expect(
+      page.getByRole('heading', { name: 'New User' })
+    ).not.toBeVisible();
+    await expect(page.getByText('User created successfully')).toBeVisible();
+    await expect(page.getByRole('cell', { name: dashboardUser })).toBeVisible();
+  });
+
+  test('should delete a user', async ({ page }) => {
+    // 1. Create a user to delete
+    const victimUser = `del_${Date.now()}`;
+    await page.getByRole('button', { name: 'Add User' }).click();
+    await page.getByLabel('Username').fill(victimUser);
+    await page.getByLabel('First Name').fill('To');
+    await page.getByLabel('Last Name').fill('Delete');
+    await page.getByLabel('Password', { exact: true }).fill('123456');
+    await page.getByLabel('Confirm Password').fill('123456');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('cell', { name: victimUser })).toBeVisible();
+
+    // 2. Find row containing this user and click delete
+    // We locate the row by the username text, then find the delete button within that row
+    const row = page.getByRole('row', { name: victimUser });
+    await row.getByTestId('DeleteIcon').click();
+
+    // 3. Confirm Deletion
+    await expect(page.getByText('Confirm Deletion')).toBeVisible();
+    await page.getByRole('button', { name: 'Delete' }).click();
+
+    // 4. Verify Disappearance
+    await expect(page.getByText('User deleted successfully')).toBeVisible();
+    await expect(
+      page.getByRole('cell', { name: victimUser })
+    ).not.toBeVisible();
   });
 });

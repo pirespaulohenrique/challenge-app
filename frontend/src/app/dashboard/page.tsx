@@ -33,11 +33,8 @@ import PeopleIcon from '@mui/icons-material/People';
 import { fetchClient } from '@/lib/fetchClient';
 import TopBar from '@/components/TopBar';
 import { APP_CONFIG } from '@/lib/constants';
-
-// NEW IMPORT
 import UserFormDialog from '@/components/UserFormDialog';
 
-// ... (Keep User Interface and Order type same as before) ...
 interface User {
   id: string;
   username: string;
@@ -60,19 +57,16 @@ export default function Dashboard() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Data State
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
 
-  // Sorting State
   const [orderBy, setOrderBy] = useState<keyof User>('createdAt');
   const [order, setOrder] = useState<Order>('DESC');
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // UI States
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -81,11 +75,9 @@ export default function Dashboard() {
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [selfInactivationOpen, setSelfInactivationOpen] = useState(false);
 
-  // REFACTOR: Logic for Dialog is now simpler
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Temporary storage for self-inactivation payload
   const [pendingSelfUpdate, setPendingSelfUpdate] = useState<any>(null);
 
   useEffect(() => {
@@ -153,23 +145,19 @@ export default function Dashboard() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // --- ACTIONS ---
-
   const handleOpenCreate = () => {
-    setSelectedUser(null); // Null means Create Mode
+    setSelectedUser(null);
     setIsFormOpen(true);
   };
 
   const handleOpenEdit = (user: User) => {
-    setSelectedUser(user); // Object means Edit Mode
+    setSelectedUser(user);
     setIsFormOpen(true);
   };
 
   const handleRequestDelete = (id: string) => setDeleteUserId(id);
 
-  // REFACTOR: This function receives clean data from UserFormDialog
   const handleFormSave = async (payload: any) => {
-    // Check for Self-Inactivation edge case
     if (
       selectedUser &&
       currentUser &&
@@ -184,14 +172,12 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       if (selectedUser) {
-        // UPDATE
         await fetchClient(`/users/${selectedUser.id}`, {
           method: 'PUT',
           body: JSON.stringify(payload),
         });
         showMessage('User updated successfully', 'success');
       } else {
-        // CREATE
         await fetchClient('/users', {
           method: 'POST',
           body: JSON.stringify(payload),
@@ -341,13 +327,18 @@ export default function Dashboard() {
                 <TableCell>{formatDate(user.createdAt)}</TableCell>
                 <TableCell>{formatDate(user.updatedAt)}</TableCell>
                 <TableCell align="right">
-                  <IconButton onClick={() => handleOpenEdit(user)} size="small">
+                  <IconButton
+                    onClick={() => handleOpenEdit(user)}
+                    size="small"
+                    aria-label="edit user"
+                  >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     onClick={() => handleRequestDelete(user.id)}
                     size="small"
                     color="error"
+                    aria-label="delete user"
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -375,7 +366,6 @@ export default function Dashboard() {
         onError={(msg) => showMessage(msg, 'error')}
       />
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteUserId} onClose={() => setDeleteUserId(null)}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
@@ -408,7 +398,6 @@ export default function Dashboard() {
         </DialogActions>
       </Dialog>
 
-      {/* Self Inactivation Dialog */}
       <Dialog
         open={selfInactivationOpen}
         onClose={() => setSelfInactivationOpen(false)}

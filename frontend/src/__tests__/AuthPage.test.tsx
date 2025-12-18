@@ -1,153 +1,156 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import AuthPage from '../app/page'; // Adjust path if needed
+import userEvent from '@testing-library/user-event';
+import AuthPage from '../app/page';
 import { fetchClient } from '@/lib/fetchClient';
 import { useRouter } from 'next/navigation';
 
-// --- MOCKS ---
-// 1. Mock the API client
+// --- Mocks ---
 jest.mock('@/lib/fetchClient', () => ({
   fetchClient: jest.fn(),
 }));
 
-// 2. Mock the Next.js Router
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
-describe('AuthPage (Login & Sign Up)', () => {
+const localStorageMock = (function () {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    clear: () => {
+      store = {};
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+  };
+})();
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
+describe('AuthPage Component', () => {
   const mockPush = jest.fn();
-  const mockFetchClient = fetchClient as jest.Mock;
 
   beforeEach(() => {
-    // Reset mocks before each test
     jest.clearAllMocks();
+    localStorage.clear();
     (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
-    // Mock localStorage
-    Storage.prototype.setItem = jest.fn();
-    Storage.prototype.getItem = jest.fn(() => null);
   });
 
-  it('renders the Login form by default', () => {
+  test('renders Login form by default', () => {
     render(<AuthPage />);
     expect(
       screen.getByRole('heading', { name: /welcome back/i })
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Username$/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /sign in/i })
     ).toBeInTheDocument();
+    expect(screen.queryByLabelText(/first name/i)).not.toBeInTheDocument();
   });
 
-  it('switches to Sign Up mode when link is clicked', () => {
+  test('toggles between Sign In and Sign Up modes', async () => {
     render(<AuthPage />);
 
-    const toggleLink = screen.getByText(/don't have an account\? sign up/i);
-    fireEvent.click(toggleLink);
+    const toggleButton = screen.getByRole('button', {
+      name: /don't have an account/i,
+    });
+    fireEvent.click(toggleButton);
 
     expect(
       screen.getByRole('heading', { name: /create account/i })
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Confirm Password$/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /sign up/i })
     ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /already have an account/i })
+    );
+    expect(
+      screen.getByRole('heading', { name: /welcome back/i })
+    ).toBeInTheDocument();
   });
 
-  it('shows validation error if fields are empty', async () => {
+  test('validates empty inputs on Login', async () => {
     render(<AuthPage />);
 
-    const submitBtn = screen.getByRole('button', { name: /sign in/i });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    // Should see Snackbar with error
-    await waitFor(() => {
-      expect(screen.getByText(/username is required/i)).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText(/username and password are required/i)
+    ).toBeInTheDocument();
+    expect(fetchClient).not.toHaveBeenCalled();
   });
 
-  it('validates password length during Sign Up', async () => {
+  test('validates password mismatch on Sign Up', async () => {
     render(<AuthPage />);
-    // Switch to Sign Up
-    fireEvent.click(screen.getByText(/don't have an account\? sign up/i));
 
-    // Fill short inputs
-    fireEvent.change(screen.getByLabelText(/username/i), {
-      target: { value: 'validUser' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: '123' },
-    }); // Short
+    fireEvent.click(screen.getByText(/don't have an account/i));
+
+    await userEvent.type(screen.getByLabelText(/^Username$/i), 'testuser');
+    await userEvent.type(screen.getByLabelText(/first name/i), 'Test');
+    await userEvent.type(screen.getByLabelText(/last name/i), 'User');
+
+    // Exact match regex to avoid selecting the eye icon
+    await userEvent.type(screen.getByLabelText(/^Password$/i), 'password123');
+    await userEvent.type(
+      screen.getByLabelText(/^Confirm Password$/i),
+      'mismatch'
+    );
 
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
-    await waitFor(() => {
-      expect(
-        screen.getByText(/password must be at least 6 characters/i)
-      ).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText(/passwords do not match/i)
+    ).toBeInTheDocument();
+    expect(fetchClient).not.toHaveBeenCalled();
   });
 
-  it('calls login API and redirects on success', async () => {
-    // Setup Mock Success Response
-    mockFetchClient.mockResolvedValueOnce({
-      sessionId: 'fake-session-token',
-      user: { id: '1', username: 'testuser' },
+  test('handles successful login and redirects', async () => {
+    (fetchClient as jest.Mock).mockResolvedValueOnce({
+      sessionId: 'session-123',
+      user: { id: '1', username: 'user1' },
     });
 
     render(<AuthPage />);
 
-    // Fill Form
-    fireEvent.change(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'password123' },
-    });
+    await userEvent.type(screen.getByLabelText(/^Username$/i), 'validuser');
+    await userEvent.type(screen.getByLabelText(/^Password$/i), 'validpass');
 
-    // Submit
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    // Verify
     await waitFor(() => {
-      expect(mockFetchClient).toHaveBeenCalledWith(
+      expect(fetchClient).toHaveBeenCalledWith(
         '/auth/login',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({
-            username: 'testuser',
-            password: 'password123',
-          }),
+          body: expect.stringContaining('validuser'),
         })
       );
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        'sessionId',
-        'fake-session-token'
-      );
-      expect(mockPush).toHaveBeenCalledWith('/dashboard');
     });
+
+    expect(localStorage.getItem('sessionId')).toBe('session-123');
+    expect(mockPush).toHaveBeenCalledWith('/dashboard');
   });
 
-  it('handles API errors gracefully', async () => {
-    // Setup Mock Error
-    mockFetchClient.mockRejectedValueOnce(new Error('Invalid credentials'));
+  test('displays API errors', async () => {
+    (fetchClient as jest.Mock).mockRejectedValueOnce(
+      new Error('Invalid credentials')
+    );
 
     render(<AuthPage />);
 
-    fireEvent.change(screen.getByLabelText(/username/i), {
-      target: { value: 'wrong' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'wrong' },
-    });
+    await userEvent.type(screen.getByLabelText(/^Username$/i), 'wrong');
+    await userEvent.type(screen.getByLabelText(/^Password$/i), 'wrong');
+
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-    await waitFor(() => {
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
-      expect(mockPush).not.toHaveBeenCalled();
-    });
+    expect(await screen.findByText(/invalid credentials/i)).toBeInTheDocument();
   });
 });

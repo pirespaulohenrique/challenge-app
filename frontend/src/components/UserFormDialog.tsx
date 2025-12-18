@@ -15,7 +15,6 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { validateUserForm } from '@/lib/validation';
 
-// Define the User interface here or import it from a shared types file
 interface User {
   id: string;
   username: string;
@@ -28,10 +27,9 @@ interface UserFormDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: any) => void;
-  userToEdit: User | null; // If null, we are in "Create Mode"
+  userToEdit: User | null;
   isLoading: boolean;
-  onError: (message: string) => void; // To trigger the parent's snackbar
-  currentUserId?: string; // To check for self-inactivation scenarios if needed
+  onError: (message: string) => void;
 }
 
 export default function UserFormDialog({
@@ -42,7 +40,6 @@ export default function UserFormDialog({
   isLoading,
   onError,
 }: UserFormDialogProps) {
-  // Internal State for the Form
   const [formData, setFormData] = useState({
     username: '',
     firstName: '',
@@ -55,10 +52,8 @@ export default function UserFormDialog({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Derived state
   const isEditMode = !!userToEdit;
 
-  // Reset or Populate form when opening
   useEffect(() => {
     if (open) {
       if (userToEdit) {
@@ -66,12 +61,11 @@ export default function UserFormDialog({
           username: userToEdit.username,
           firstName: userToEdit.firstName,
           lastName: userToEdit.lastName,
-          password: '', // Always blank on edit
+          password: '',
           confirmPassword: '',
           status: userToEdit.status,
         });
       } else {
-        // Reset for Create Mode
         setFormData({
           username: '',
           firstName: '',
@@ -87,7 +81,6 @@ export default function UserFormDialog({
   }, [open, userToEdit]);
 
   const handleSubmit = () => {
-    // 1. Run Validation
     const validation = validateUserForm(
       {
         username: formData.username,
@@ -97,16 +90,13 @@ export default function UserFormDialog({
         confirmPassword: formData.confirmPassword,
       },
       !isEditMode
-    ); // Pass true if creating (password required), false if editing
+    );
 
     if (!validation.isValid) {
       onError(validation.error || 'Validation Failed');
       return;
     }
 
-    // 2. Prepare Payload
-    // We send everything; the parent decides what to send to API or we filter here.
-    // Let's send a clean object.
     const payload: any = {
       username: formData.username,
       firstName: formData.firstName,
@@ -118,11 +108,9 @@ export default function UserFormDialog({
       payload.password = formData.password;
     }
 
-    // 3. Pass back to Parent
     onSave(payload);
   };
 
-  // UI Helpers
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConfirmPassword = () =>
     setShowConfirmPassword((show) => !show);
@@ -130,10 +118,9 @@ export default function UserFormDialog({
     event: React.MouseEvent<HTMLButtonElement>
   ) => event.preventDefault();
 
-  // Style for autofill background fix
   const autofillStyle = {
     '& .MuiInputBase-input:-webkit-autofill': {
-      WebkitBoxShadow: `0 0 0 100px white inset`, // Adjust color if using dark mode
+      WebkitBoxShadow: `0 0 0 100px white inset`,
       transition: 'background-color 5000s ease-in-out 0s',
     },
   };
@@ -149,12 +136,13 @@ export default function UserFormDialog({
           label="Username"
           fullWidth
           value={formData.username}
-          disabled={isEditMode} // Username usually cannot be changed
+          disabled={isEditMode}
           autoComplete="off"
           sx={autofillStyle}
           onChange={(e) =>
             setFormData({ ...formData, username: e.target.value })
           }
+          inputProps={{ 'aria-label': 'username' }}
         />
         <TextField
           margin="dense"
@@ -166,6 +154,7 @@ export default function UserFormDialog({
           onChange={(e) =>
             setFormData({ ...formData, firstName: e.target.value })
           }
+          inputProps={{ 'aria-label': 'first name' }}
         />
         <TextField
           margin="dense"
@@ -177,9 +166,9 @@ export default function UserFormDialog({
           onChange={(e) =>
             setFormData({ ...formData, lastName: e.target.value })
           }
+          inputProps={{ 'aria-label': 'last name' }}
         />
 
-        {/* Password Fields */}
         {(!isEditMode || (isEditMode && formData.status !== 'inactive')) && (
           <>
             <TextField
@@ -193,10 +182,12 @@ export default function UserFormDialog({
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
+              inputProps={{ 'aria-label': 'password' }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
+                      aria-label="toggle password visibility"
                       onClick={handleClickShowPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
@@ -218,10 +209,12 @@ export default function UserFormDialog({
               onChange={(e) =>
                 setFormData({ ...formData, confirmPassword: e.target.value })
               }
+              inputProps={{ 'aria-label': 'confirm password' }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
+                      aria-label="toggle password visibility"
                       onClick={handleClickShowConfirmPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
@@ -244,6 +237,7 @@ export default function UserFormDialog({
           onChange={(e) =>
             setFormData({ ...formData, status: e.target.value as any })
           }
+          SelectProps={{ 'aria-label': 'status' } as any}
         >
           <MenuItem value="active">Active</MenuItem>
           <MenuItem value="inactive">Inactive</MenuItem>
